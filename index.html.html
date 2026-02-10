@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Carros en Venta</title>
+
+<style>
+body{
+    font-family:Segoe UI, Arial;
+    background:#f4f6f8;
+    margin:0;
+    padding:20px;
+}
+
+h1{ margin-bottom:20px; }
+
+.contenedor{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:20px;
+}
+
+/* TARJETA */
+.carro{
+    background:white;
+    border-radius:14px;
+    box-shadow:0 10px 25px rgba(0,0,0,.1);
+    overflow:hidden;
+    position:relative;
+}
+
+/* ETIQUETA */
+.etiqueta{
+    position:absolute;
+    top:12px;
+    left:12px;
+    padding:6px 14px;
+    font-size:14px;
+    font-weight:bold;
+    border-radius:20px;
+    color:white;
+    z-index:5;
+}
+
+.disponible{ background:#28a745; }
+.vendido{ background:#dc3545; }
+
+/* EFECTO VENDIDO */
+.vendido-auto .principal{
+    filter:grayscale(100%) brightness(55%);
+}
+
+.vendido-auto .precio{
+    text-decoration:line-through;
+    color:#999;
+}
+
+.vendido-auto .whatsapp{
+    background:#aaa;
+    pointer-events:none;
+}
+
+/* IMAGEN */
+.principal{
+    width:100%;
+    height:220px;
+    object-fit:contain;
+    background:#000;
+    cursor:zoom-in;
+}
+
+/* MINIATURAS */
+.miniaturas{
+    display:flex;
+    justify-content:center;
+    padding:10px;
+}
+
+.miniaturas img{
+    width:70px;
+    height:70px;
+    object-fit:cover;
+    margin:5px;
+    border-radius:8px;
+    cursor:pointer;
+    border:2px solid transparent;
+}
+
+.miniaturas img:hover{
+    border-color:#007bff;
+}
+
+/* INFO */
+.info{ padding:15px; }
+
+.precio{
+    color:#007bff;
+    font-size:20px;
+    font-weight:bold;
+}
+
+.whatsapp{
+    display:block;
+    margin-top:12px;
+    padding:12px;
+    background:#25D366;
+    color:white;
+    text-align:center;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+/* BOTON ADMIN */
+.admin-btn{
+    margin-top:10px;
+    width:100%;
+    padding:10px;
+    border:none;
+    border-radius:10px;
+    background:#6c757d;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* MODAL */
+#modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.85);
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+#modal img{
+    max-width:90%;
+    max-height:90%;
+    border-radius:10px;
+}
+
+.cerrar{
+    position:absolute;
+    top:20px;
+    right:30px;
+    font-size:30px;
+    color:white;
+    cursor:pointer;
+}
+
+.flecha{
+    position:absolute;
+    top:50%;
+    font-size:40px;
+    color:white;
+    cursor:pointer;
+}
+
+.izquierda{ left:30px; }
+.derecha{ right:30px; }
+
+/* MOVIL */
+@media(max-width:768px){
+    .principal{ height:200px; }
+}
+</style>
+</head>
+
+<body>
+
+<h1>🚘 Autos Disponibles</h1>
+
+<div class="contenedor">
+
+<div class="carro">
+
+    <span class="etiqueta disponible">DISPONIBLE</span>
+
+    <img id="foto1" class="principal"
+         src="imagenes/civic1.jpg"
+         onclick="abrirZoom(this.src)">
+
+    <div class="miniaturas">
+        <img src="imagenes/civic1.jpg" onclick="cambiarFoto('foto1',this.src)">
+        <img src="imagenes/civic2.jpg" onclick="cambiarFoto('foto1',this.src)">
+        <img src="imagenes/civic3.jpg" onclick="cambiarFoto('foto1',this.src)">
+        <img src="imagenes/civic4.jpg" onclick="cambiarFoto('foto1',this.src)">
+        <img src="imagenes/civic5.jpg" onclick="cambiarFoto('foto1',this.src)">
+        <img src="imagenes/civic6.jpg" onclick="cambiarFoto('foto1',this.src)">
+        <img src="imagenes/civic7.jpg" onclick="cambiarFoto('foto1',this.src)">
+        <img src="imagenes/civic8.jpg" onclick="cambiarFoto('foto1',this.src)">
+        <img src="imagenes/civic9.jpg" onclick="cambiarFoto('foto1',this.src)">
+    </div>
+
+    <div class="info">
+        <h3>Honda Civic 2017</h3>
+        <p class="precio">$208,000 MXN</p>
+        <p>✔ Legalizado por aduana</p>
+
+        <a class="whatsapp" href="https://wa.me/6871060115" target="_blank">
+            💬 Me interesa
+        </a>
+
+        <!-- BOTON VENDIDO -->
+        <button class="admin-btn" onclick="toggleVendido(this)">
+            🔒 Marcar como VENDIDO
+        </button>
+    </div>
+
+</div>
+</div>
+
+<!-- MODAL -->
+<div id="modal">
+    <span class="cerrar" onclick="cerrarZoom()">✖</span>
+    <span class="flecha izquierda" onclick="anterior()">⬅️</span>
+    <img id="imgZoom">
+    <span class="flecha derecha" onclick="siguiente()">➡️</span>
+</div>
+
+<script>
+const fotos=[
+ "imagenes/civic1.jpg",
+ "imagenes/civic2.jpg",
+ "imagenes/civic3.jpg",
+ "imagenes/civic4.jpg",
+ "imagenes/civic5.jpg",
+ "imagenes/civic6.jpg",
+ "imagenes/civic7.jpg",
+ "imagenes/civic8.jpg",
+ "imagenes/civic9.jpg"
+];
+
+let indice=0;
+
+function cambiarFoto(id,src){
+    document.getElementById(id).src=src;
+}
+
+function abrirZoom(src){
+    indice=fotos.indexOf(src);
+    document.getElementById("imgZoom").src=src;
+    document.getElementById("modal").style.display="flex";
+}
+
+function cerrarZoom(){
+    document.getElementById("modal").style.display="none";
+}
+
+function anterior(){
+    indice=(indice-1+fotos.length)%fotos.length;
+    document.getElementById("imgZoom").src=fotos[indice];
+}
+
+function siguiente(){
+    indice=(indice+1)%fotos.length;
+    document.getElementById("imgZoom").src=fotos[indice];
+}
+
+function toggleVendido(btn){
+    const carro=btn.closest(".carro");
+    const etiqueta=carro.querySelector(".etiqueta");
+
+    if(carro.classList.contains("vendido-auto")){
+        carro.classList.remove("vendido-auto");
+        etiqueta.textContent="DISPONIBLE";
+        etiqueta.className="etiqueta disponible";
+        btn.textContent="🔒 Marcar como VENDIDO";
+    }else{
+        carro.classList.add("vendido-auto");
+        etiqueta.textContent="VENDIDO";
+        etiqueta.className="etiqueta vendido";
+        btn.textContent="🔓 Marcar como DISPONIBLE";
+    }
+}
+</script>
+
+</body>
+</html>
